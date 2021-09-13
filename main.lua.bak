@@ -1,0 +1,71 @@
+EMPTY = {255/255, 255/255, 255/255}
+SAND = {228/255, 166/255, 114/255}
+ROCK = {175/255, 191/255, 210/255}
+WATER = {4/255, 132/255, 209/255}
+
+WIDTH, HEIGHT = love.graphics.getPixelWidth(), love.graphics.getPixelHeight()
+SPEED = 6
+
+Cell = {
+    new = function(x, y, type) 
+        return {
+            x = x or 0, 
+            y = y or 0,
+            type = type or EMPTY,
+        } 
+    end
+}
+
+function love.load()
+    cellGrid = {}
+    cellList = {}
+
+    love.graphics.setColor({1,0,0})
+    love.graphics.setPointSize(1)
+end
+
+function love.update(dt)
+    -- Cell creation
+    if love.mouse.isDown(1) then 
+        local x = love.mouse.getX()
+        local y = love.mouse.getY()
+
+        if not cellGrid[x] then
+            cellGrid[x] = {}
+        end
+        if not cellGrid[x][y] then
+            local cell = Cell.new(x, y, SAND)
+            cellGrid[x][y] = cell
+            table.insert(cellList, cell)
+        end
+    end
+
+    -- Cell movement
+    for i,cell in ipairs(cellList) do
+        for i = 1,SPEED,1 do
+            prev = { x = cell.x, y = cell.y }
+            if not cellGrid[cell.x][cell.y+1] then
+
+                cell.y = cell.y + 1
+
+                if cell.y > HEIGHT then
+                    cell.y = HEIGHT
+                    i  = 10
+                end
+
+                cellGrid[prev.x][prev.y] = nil 
+                cellGrid[cell.x][cell.y] = cell
+            end
+        end    
+    end
+end
+
+function love.draw()
+    local pointList = {}
+    for i,cell in ipairs(cellList) do
+        table.insert(pointList, cell.x)
+        table.insert(pointList, cell.y)
+    end
+
+    love.graphics.points(pointList)
+end
